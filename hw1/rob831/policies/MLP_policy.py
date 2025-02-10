@@ -78,10 +78,21 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         if len(obs.shape) > 1:
             observation = obs
         else:
+            # raise error
             observation = obs[None]
 
         # TODO return the action that the policy prescribes
-        raise NotImplementedError
+        # raise NotImplementedError
+
+        # (1, 111)
+        # print(observation.shape)
+
+        action = self.forward(ptu.from_numpy(observation))
+
+        # if self.discrete:
+        #     action = torch.argmax(action, dim=1)
+        # print(action.shape)
+        return ptu.to_numpy(action)
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
@@ -93,7 +104,12 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor) -> Any:
-        raise NotImplementedError
+        # raise NotImplementedError
+        if self.discrete:
+            return self.logits_na(observation)
+        else:
+            return self.mean_net(observation)
+
 
 
 #####################################################
@@ -109,7 +125,37 @@ class MLPPolicySL(MLPPolicy):
             adv_n=None, acs_labels_na=None, qvals=None
     ):
         # TODO: update the policy and return the loss
-        loss = TODO
+
+        self.optimizer.zero_grad()
+
+        # batched
+        # print(observations.shape)
+        # (100, 111)
+        # print(actions.shape)
+        # (100, 8)
+
+        # batch_size = observations.shape[0]
+
+        # forward pass
+        output = self.forward(ptu.from_numpy(observations))
+        # print(output.shape)
+        # print(actions.shape)
+
+        # best_actions = torch.argmax(output, dim=1) 
+        # label_actions = torch.argmax(ptu.from_numpy(actions), dim=1)
+        # print(best_actions.shape)
+        # print(actions.shape)
+    
+        loss = self.loss(output, ptu.from_numpy(actions))
+
+        # print(best_action)
+        # tensor(2, device='cuda:0')
+
+        # calculate loss
+        # backprop
+        loss.backward()
+        # update
+        self.optimizer.step()
 
         return {
             # You can add extra logging information here, but keep this line
