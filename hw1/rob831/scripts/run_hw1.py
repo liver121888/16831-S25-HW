@@ -50,6 +50,10 @@ class BC_Trainer(object):
         )
 
 def main():
+    import warnings
+    warnings.simplefilter(action='ignore', category=DeprecationWarning)
+    warnings.simplefilter(action='ignore', category=UserWarning)
+
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--expert_policy_file', '-epf', type=str, required=True)  # relative to where you're running this script from
@@ -96,7 +100,7 @@ def main():
         assert args.n_iter==1, ('Vanilla behavior cloning collects expert data just once (n_iter=1)')
 
     ## directory for logging
-    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data')
+    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
     logdir = logdir_prefix + args.exp_name + '_' + args.env_name + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
