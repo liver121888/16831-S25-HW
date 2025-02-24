@@ -53,6 +53,10 @@ class PG_Trainer(object):
 
 
 def main():
+    
+    import warnings
+    warnings.simplefilter(action='ignore', category=DeprecationWarning)
+    warnings.simplefilter(action='ignore', category=UserWarning)
 
     import argparse
     parser = argparse.ArgumentParser()
