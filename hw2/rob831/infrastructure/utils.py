@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import copy
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 ############################################
 ############################################
@@ -89,21 +90,74 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
             terminals.append(0)
     return Path(obs, image_obs, acs, rewards, next_obs, terminals)
 
-def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, render=False, render_mode=('rgb_array')):
+# def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, render=False, render_mode=('rgb_array')):
+
+#     timesteps_this_batch = 0
+#     paths = []
+#     while timesteps_this_batch < min_timesteps_per_batch:
+
+#         #collect rollout
+#         path = sample_trajectory(env, policy, max_path_length, render, render_mode)
+#         paths.append(path)
+
+#         #count steps
+#         timesteps_this_batch += get_pathlength(path)
+#         print('At timestep:    ', timesteps_this_batch, '/', min_timesteps_per_batch, end='\r')
+
+#     return paths, timesteps_this_batch
+
+def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, render=False, render_mode=('rgb_array'), num_threads=4):
+    """
+    Collects a batch of trajectories in parallel using multiple threads.
+    """
+
+    def collect_trajectory():
+        """
+        Helper function to collect a single trajectory.
+        """
+        return sample_trajectory(env, policy, max_path_length, render, render_mode)
 
     timesteps_this_batch = 0
     paths = []
-    while timesteps_this_batch < min_timesteps_per_batch:
 
-        #collect rollout
-        path = sample_trajectory(env, policy, max_path_length, render, render_mode)
-        paths.append(path)
+    parallelization = True
+    if parallelization:
+        # Use ThreadPoolExecutor for multi-threaded trajectory collection
+        with ThreadPoolExecutor(max_workers=num_threads) as executor:
+            futures = []
+            
+            # Submit initial tasks
+            while timesteps_this_batch < min_timesteps_per_batch:
+                futures.append(executor.submit(collect_trajectory))
+                
+                # As tasks complete, check their results
+                for future in as_completed(futures):
+                    path = future.result()
+                    paths.append(path)
+                    timesteps_this_batch += get_pathlength(path)
+                    
+                    print('At timestep:    ', timesteps_this_batch, '/', min_timesteps_per_batch, end='\r')
 
-        #count steps
-        timesteps_this_batch += get_pathlength(path)
-        print('At timestep:    ', timesteps_this_batch, '/', min_timesteps_per_batch, end='\r')
+                    # Break if we've collected enough timesteps
+                    if timesteps_this_batch >= min_timesteps_per_batch:
+                        break
+
+                # Clear futures list for next batch of tasks
+                futures = []
+    else:
+        while timesteps_this_batch < min_timesteps_per_batch:
+
+            #collect rollout
+            path = sample_trajectory(env, policy, max_path_length, render, render_mode)
+            paths.append(path)
+
+            #count steps
+            timesteps_this_batch += get_pathlength(path)
+            print('At timestep:    ', timesteps_this_batch, '/', min_timesteps_per_batch, end='\r')
+           
 
     return paths, timesteps_this_batch
+
 
 def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False, render_mode=('rgb_array')):
 

@@ -118,8 +118,13 @@ def main():
     ###################
 
     trainer = PG_Trainer(params)
-    trainer.run_training_loop()
 
+    start_time = time.time()
+    # modify parallelization flag in utils.py
+    trainer.run_training_loop()
+    end_time = time.time()
+    training_time = end_time - start_time
+    print(f"Training time: {training_time:.2f} seconds")
 
 if __name__ == "__main__":
     main()
