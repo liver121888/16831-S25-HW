@@ -5,6 +5,9 @@ from rob831.infrastructure.rl_trainer import RL_Trainer
 from rob831.agents.dqn_agent import DQNAgent
 from rob831.infrastructure.dqn_utils import get_env_kwargs
 
+import warnings
+warnings.simplefilter(action='ignore', category=DeprecationWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 
 class Q_Trainer(object):
 

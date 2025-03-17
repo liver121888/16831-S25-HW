@@ -4,6 +4,10 @@ import os
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
+import warnings
+warnings.simplefilter(action='ignore', category=DeprecationWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
+
 def get_section_results(file):
     """
         requires tensorflow==1.12.0

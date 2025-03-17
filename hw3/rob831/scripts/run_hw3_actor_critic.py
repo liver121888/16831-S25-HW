@@ -4,6 +4,9 @@ import time
 from rob831.agents.ac_agent import ACAgent
 from rob831.infrastructure.rl_trainer import RL_Trainer
 
+import warnings
+warnings.simplefilter(action='ignore', category=DeprecationWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 
 class AC_Trainer(object):
 
