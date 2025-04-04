@@ -4,6 +4,9 @@ import time
 from rob831.hw4_part1.infrastructure.rl_trainer import RL_Trainer
 from rob831.hw4_part1.agents.mb_agent import MBAgent
 
+import warnings
+warnings.simplefilter(action='ignore', category=DeprecationWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 
 class MB_Trainer(object):
 
